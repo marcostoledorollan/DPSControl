@@ -14,10 +14,8 @@ DEFAULT_URL = os.environ.get(
 USERNAME = os.environ.get("CONFLUENCE_USERNAME")
 PASSWORD = os.environ.get("CONFLUENCE_PASSWORD")
 HEADLESS = os.environ.get("PLAYWRIGHT_HEADLESS", "false").lower() in {"1", "true", "yes"}
-API_USERNAME = os.environ.get("API_USERNAME")
-API_PASSWORD = os.environ.get("API_PASSWORD")
-SERVER_HOST = os.environ.get("SERVER_HOST", "0.0.0.0")
-SERVER_PORT = int(os.environ.get("SERVER_PORT", "8000"))
+PROJECT_NAME = os.environ.get("CONFLUENCE_PROJECT_NAME")
+TARGET_ENVIRONMENT = os.environ.get("CONFLUENCE_ENVIRONMENT", "PRO")
 
 
 def _get_url_for_environment(uat_variable: str, pro_variable: str, environment: str) -> str:
@@ -59,13 +57,13 @@ def get_confluence_url(project_name: str, environment: str) -> str:
             )
 
 
-def run(project_name: str | None, target_environment: str | None) -> str:
+def run() -> str:
     if not USERNAME or not PASSWORD:
         raise ValueError("CONFLUENCE_USERNAME and CONFLUENCE_PASSWORD must be set")
 
     url = DEFAULT_URL
-    if project_name:
-        url = get_confluence_url(project_name, target_environment or "PRO")
+    if PROJECT_NAME:
+        url = get_confluence_url(PROJECT_NAME, TARGET_ENVIRONMENT)
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=HEADLESS)
