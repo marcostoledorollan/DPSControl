@@ -1,5 +1,0 @@
-/Users/marcospc/Projects/TestPaint1/TestPaint1/bin/TestPaint1.dll
-/Users/marcospc/Projects/TestPaint1/TestPaint1/bin/TestPaint1.pdb
-/Users/marcospc/Projects/TestPaint1/TestPaint1/obj/Debug/TestPaint1.csproj.CoreCompileInputs.cache
-/Users/marcospc/Projects/TestPaint1/TestPaint1/obj/Debug/TestPaint1.dll
-/Users/marcospc/Projects/TestPaint1/TestPaint1/obj/Debug/TestPaint1.pdb
