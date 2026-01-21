@@ -2,24 +2,69 @@ from playwright.sync_api import sync_playwright
 import os
 import time
 
-URL = os.environ.get(
+DEFAULT_URL = os.environ.get(
     "CONFLUENCE_PAGE_URL",
     "https://confluence.prosegur.net/pages/viewpage.action?spaceKey=DTDA&title=PRO+GEDGE+2026",
 )
 USERNAME = os.environ.get("CONFLUENCE_USERNAME")
 PASSWORD = os.environ.get("CONFLUENCE_PASSWORD")
 HEADLESS = os.environ.get("PLAYWRIGHT_HEADLESS", "false").lower() in {"1", "true", "yes"}
+PROJECT_NAME = os.environ.get("CONFLUENCE_PROJECT_NAME")
+TARGET_ENVIRONMENT = os.environ.get("CONFLUENCE_ENVIRONMENT", "PRO")
+
+
+def _get_url_for_environment(uat_variable: str, pro_variable: str, environment: str) -> str:
+    match environment.upper():
+        case "UAT":
+            url = os.environ.get(uat_variable)
+        case "PRO":
+            url = os.environ.get(pro_variable)
+        case _:
+            raise ValueError("CONFLUENCE_ENVIRONMENT must be UAT or PRO")
+
+    if not url:
+        raise ValueError(f"Missing URL for environment {environment}")
+
+    return url
+
+
+def get_confluence_url(project_name: str, environment: str) -> str:
+    match project_name:
+        case "dSOC":
+            return _get_url_for_environment("DSOC_UAT_URL", "DSOC_PRO_URL", environment)
+        case "Firesoc":
+            return _get_url_for_environment(
+                "FIRESOC_UAT_URL",
+                "FIRESOC_PRO_URL",
+                environment,
+            )
+        case "AlarmControl":
+            return _get_url_for_environment(
+                "ALARMCONTROL_UAT_URL",
+                "ALARMCONTROL_PRO_URL",
+                environment,
+            )
+        case "Video":
+            return _get_url_for_environment("VIDEO_UAT_URL", "VIDEO_PRO_URL", environment)
+        case _:
+            raise ValueError(
+                "CONFLUENCE_PROJECT_NAME must be dSOC, Firesoc, AlarmControl, or Video"
+            )
 
 
 def run() -> str:
     if not USERNAME or not PASSWORD:
         raise ValueError("CONFLUENCE_USERNAME and CONFLUENCE_PASSWORD must be set")
 
+    url = DEFAULT_URL
+    if PROJECT_NAME:
+        url = get_confluence_url(PROJECT_NAME, TARGET_ENVIRONMENT)
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=HEADLESS)
         page = browser.new_page()
 
-        page.goto(URL, wait_until="domcontentloaded")
+        page.goto(url, wait_until="domcontentloaded")
 
         time.sleep(1)
 
